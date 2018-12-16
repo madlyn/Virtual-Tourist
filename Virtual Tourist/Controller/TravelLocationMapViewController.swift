@@ -95,15 +95,21 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         var selectedAnnotation = view.annotation as? MKPointAnnotation
-        if deleteButton.isHidden == false{
-            for location in fetchedResultsController!.fetchedObjects!{
-                if location.lat == selectedAnnotation?.coordinate.latitude && location.long == selectedAnnotation?.coordinate.longitude{
-                    dataController.viewContext.delete(location)
-                    try? dataController.viewContext.save()
-                }
+        var selectedPin : Pin!
+        for location in fetchedResultsController!.fetchedObjects!{
+            if location.lat == selectedAnnotation?.coordinate.latitude && location.long == selectedAnnotation?.coordinate.longitude{
+                selectedPin = location
             }
+        }
+        if deleteButton.isHidden == false{
+            dataController.viewContext.delete(selectedPin)
+            try? dataController.viewContext.save()
             mapView.removeAnnotation(selectedAnnotation!)
             
+        } else{
+            let destination = storyboard?.instantiateViewController(withIdentifier: "photoAlbum") as! PhotoAlbumViewController
+            destination.pin = selectedPin
+            navigationController?.pushViewController(destination, animated: true)
         }
     }
     
