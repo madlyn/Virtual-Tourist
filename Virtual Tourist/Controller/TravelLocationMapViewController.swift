@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 import CoreData
 
-class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
+class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
 
     @IBOutlet weak var deleteButton: UIButton!
     @IBOutlet weak var mapView: MKMapView!
@@ -40,7 +40,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
     
     fileprivate func setupFetchResultsController() {
         let fetchRequest : NSFetchRequest<Pin> = Pin.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "lat", ascending: false)]
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "lat", ascending: true)]
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
         do{
@@ -72,6 +72,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
         let pin = Pin(context: dataController.viewContext)
         pin.lat = touchedAtCoordinate.latitude
         pin.long = touchedAtCoordinate.longitude
+        
         try? dataController.viewContext.save()
     }
 
@@ -89,14 +90,24 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
         }
     }
     
-    func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
-        let defaults = UserDefaults.standard
-        let locationData = ["lat":mapView.centerCoordinate.latitude
-            , "long":mapView.centerCoordinate.longitude
-            , "latDelta":mapView.region.span.latitudeDelta
-            , "longDelta":mapView.region.span.longitudeDelta]
-        defaults.set(locationData, forKey: "location")
+    
+   
+    
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        var selectedAnnotation = view.annotation as? MKPointAnnotation
+        if deleteButton.isHidden == false{
+            for location in fetchedResultsController!.fetchedObjects!{
+                if location.lat == selectedAnnotation?.coordinate.latitude && location.long == selectedAnnotation?.coordinate.longitude{
+                    dataController.viewContext.delete(location)
+                    try? dataController.viewContext.save()
+                }
+            }
+            mapView.removeAnnotation(selectedAnnotation!)
+            
+        }
     }
+    
+    // MARK: - Map Functions
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         
         let reuseId = "pin"
@@ -116,25 +127,13 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
         return pinView
     }
     
-    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        var selectedAnnotation = view.annotation as? MKPointAnnotation
-        if deleteButton.isHidden == false{
-            mapView.removeAnnotation(selectedAnnotation!)
-        }
-    }
-}
-
-extension TravelLocationMapViewController : NSFetchedResultsControllerDelegate{
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        
+    func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
+        let defaults = UserDefaults.standard
+        let locationData = ["lat":mapView.centerCoordinate.latitude
+            , "long":mapView.centerCoordinate.longitude
+            , "latDelta":mapView.region.span.latitudeDelta
+            , "longDelta":mapView.region.span.longitudeDelta]
+        defaults.set(locationData, forKey: "location")
     }
     
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        
-    }
-    public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-    }
 }
-
-
-
