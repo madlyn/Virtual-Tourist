@@ -8,15 +8,21 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
 
     @IBOutlet weak var deleteButton: UIButton!
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var editButton: UIBarButtonItem!
+    var fetchedResultsController : NSFetchedResultsController<Pin>!
+    var dataController : DataController!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        var delegate = UIApplication.shared.delegate as! AppDelegate
+        dataController = delegate.dataController
+        setupFetchResultsController()
         deleteButton.isHidden = true
         title = "Virtual Tourist"
         mapView.delegate = self
@@ -28,9 +34,32 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
         let longTap = UILongPressGestureRecognizer(target: self, action: #selector(dropPin(_:)))
         longTap.minimumPressDuration = 1.5 // in seconds
         mapView.addGestureRecognizer(longTap)
-    
-    
+        addAnnotations()
         
+    }
+    
+    fileprivate func setupFetchResultsController() {
+        let fetchRequest : NSFetchRequest<Pin> = Pin.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "lat", ascending: false)]
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController.delegate = self
+        do{
+            try fetchedResultsController.performFetch()
+        } catch{
+            fatalError()
+        }
+    }
+    
+    func addAnnotations(){
+        if let locations = fetchedResultsController!.fetchedObjects{
+            for location in locations{
+                let newPin = MKPointAnnotation()
+                newPin.coordinate.latitude = location.lat
+                newPin.coordinate.longitude = location.long
+                mapView.addAnnotation(newPin)
+            }
+        }
+       
     }
     
     @objc func dropPin(_ recognizer: UIGestureRecognizer){
@@ -40,6 +69,10 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
         let newPin = MKPointAnnotation()
         newPin.coordinate = touchedAtCoordinate
         mapView.addAnnotation(newPin)
+        let pin = Pin(context: dataController.viewContext)
+        pin.lat = touchedAtCoordinate.latitude
+        pin.long = touchedAtCoordinate.longitude
+        try? dataController.viewContext.save()
     }
 
     @IBAction func editPins(_ sender: Any) {
@@ -88,6 +121,18 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
         if deleteButton.isHidden == false{
             mapView.removeAnnotation(selectedAnnotation!)
         }
+    }
+}
+
+extension TravelLocationMapViewController : NSFetchedResultsControllerDelegate{
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        
+    }
+    public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
     }
 }
 
