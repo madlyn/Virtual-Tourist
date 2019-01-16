@@ -18,13 +18,15 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     var dataController: DataController!
     var fetchedResultsController : NSFetchedResultsController<Photo>!
     var backgroundContext : NSManagedObjectContext!
-    var pictures = [Data]()
+//    var pictures = [Data]()
     var pin : Pin!
-    var observerToken : Any?
+//    var observerToken : Any?
+//    var savedResults = true
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupContext()
+        getImages()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -35,14 +37,13 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         super.viewDidLoad()
         mapView.delegate = self
         setMap()
-        getImages()
-        addNewImageObserver()
+//        addNewImageObserver()
         
     }
     
-    deinit {
-        removeNewImageObserver()
-    }
+//    deinit {
+//        removeNewImageObserver()
+//    }
     
     fileprivate func setupContext() {
         let delegate = UIApplication.shared.delegate as! AppDelegate
@@ -51,16 +52,34 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     }
     
     fileprivate func getImages() {
-        let manager = FlickrWebManager()
-        manager.displayImageFromFlickrBySearch(lat: pin.lat, long: pin.long) { (result, error) in
-            if let error = error{
-                print(error)
-                return
+        let fetchRequest : NSFetchRequest<Photo> = Photo.fetchRequest()
+        let predicate = NSPredicate(format: "pin == %@", pin)
+        fetchRequest.predicate = predicate
+        let sortDescriptor = NSSortDescriptor(key: "pin", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController.delegate = self
+        
+        do {
+            try fetchedResultsController.performFetch()
+            if fetchedResultsController.fetchedObjects?.count == 0{
+                print("No Images")
+//                savedResults = false
+                let manager = FlickrWebManager()
+                manager.displayImageFromFlickrBySearch(lat: pin.lat, long: pin.long) { (result, error) in
+                    if let error = error{
+                        print(error)
+                        return
+                    }
+                    for pic in result!{
+                        self.downloadImage(url: pic)
+                    }
+                }
             }
-            for pic in result!{
-                self.downloadImage(url: pic)
-            }
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
         }
+        
     }
     
     fileprivate func downloadImage(url : String){
@@ -70,9 +89,10 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 print(error)
                 return
             }
-            self.pictures.append(data!)
+//            self.pictures.append(data!)
             let pic = Photo(context: self.dataController.backgroundContext)
             pic.data = data
+            pic.pin = self.pin
             try? self.backgroundContext.save()
             
         }
@@ -115,13 +135,13 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     // MARK: Collection View
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return pictures.count
+        return fetchedResultsController.sections?[0].numberOfObjects ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
+        let picture = fetchedResultsController.object(at: indexPath)
         let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! ImageCollectionViewCell
-                cell.image.image = UIImage(data: pictures[indexPath.row])
+        cell.image.image = UIImage(data: picture.data!)
         return cell;
         
         
@@ -129,21 +149,63 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
 }
 
-extension PhotoAlbumViewController{
-    func addNewImageObserver(){
-        removeNewImageObserver()
-        observerToken = NotificationCenter.default.addObserver(forName: .NSManagedObjectContextObjectsDidChange, object: dataController?.viewContext, queue: nil, using: handleNewImageObserver(notification:))
-    }
-    func removeNewImageObserver(){
-        if let token = observerToken{
-            NotificationCenter.default.removeObserver(token)
+//extension PhotoAlbumViewController{
+//    func addNewImageObserver(){
+//        removeNewImageObserver()
+//        observerToken = NotificationCenter.default.addObserver(forName: .NSManagedObjectContextObjectsDidChange, object: dataController?.viewContext, queue: nil, using: handleNewImageObserver(notification:))
+//    }
+//    func removeNewImageObserver(){
+//        if let token = observerToken{
+//            NotificationCenter.default.removeObserver(token)
+//        }
+//    }
+//    func handleNewImageObserver(notification : Notification){
+//        DispatchQueue.main.async {
+//            self.collection.reloadData()
+//            print("updating")
+//        }
+//    }
+//
+//}
+
+extension PhotoAlbumViewController:NSFetchedResultsControllerDelegate {
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            break
+//            collection.insertItems(at: [indexPath!])
+            //            tableView.insertRows(at: [newIndexPath!], with: .fade)
+            break
+        case .delete:
+            break
+            //            tableView.deleteRows(at: [indexPath!], with: .fade)
+            break
+        case .update: break
+        //            tableView.reloadRows(at: [indexPath!], with: .fade)
+        case .move: break
+            //            tableView.moveRow(at: indexPath!, to: newIndexPath!)
         }
     }
-    func handleNewImageObserver(notification : Notification){
-        DispatchQueue.main.async {
-            self.collection.reloadData()
-            print("updating")
-        }
+    
+    //    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
+    //        let indexSet = IndexSet(integer: sectionIndex)
+    //        switch type {
+    //        case .insert: tableView.insertSections(indexSet, with: .fade)
+    //        case .delete: tableView.deleteSections(indexSet, with: .fade)
+    //        case .update, .move:
+    //            fatalError("Invalid change type in controller(_:didChange:atSectionIndex:for:). Only .insert or .delete should be possible.")
+    //        }
+    //    }
+    
+    
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        collection.reloadData()
+        //        collection.beginUpdates()
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        //        collection.endUpdates()
     }
     
 }
