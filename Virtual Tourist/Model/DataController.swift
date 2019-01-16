@@ -10,10 +10,18 @@ import Foundation
 import CoreData
 
 class DataController{
-    let persistentContainer : NSPersistentContainer
-    
+    let persistentContainer:NSPersistentContainer
+    var backgroundContext : NSManagedObjectContext!
     init(modelName : String){
         persistentContainer = NSPersistentContainer(name: modelName)
+    }
+    
+    func configureContexts(){
+        backgroundContext = persistentContainer.newBackgroundContext()
+        viewContext.automaticallyMergesChangesFromParent = true
+        backgroundContext.automaticallyMergesChangesFromParent = true
+        backgroundContext.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
+        viewContext.mergePolicy = NSMergePolicy.mergeByPropertyStoreTrump
     }
     
     func load(complition: (()->Void)? = nil){
@@ -21,6 +29,7 @@ class DataController{
             guard error == nil else{
                 fatalError(error!.localizedDescription)
             }
+            self.configureContexts()
             complition?()
         }
     }

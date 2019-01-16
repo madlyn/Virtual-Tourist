@@ -9,7 +9,7 @@
 import Foundation
 
 class FlickrWebManager{
-    public func displayImageFromFlickrBySearch(lat : Double , long: Double, completionHandler: @escaping (_ result: [[String:AnyObject]]?, _ error: String?) -> Void) {
+    public func displayImageFromFlickrBySearch(lat : Double , long: Double, completionHandler: @escaping (_ result: [String]?, _ error: String?) -> Void) {
         
         let methodParameters: [String: AnyObject] = [Constants.FlickrParameterKeys.SafeSearch:Constants.FlickrParameterValues.UseSafeSearch,
                                                      Constants.FlickrParameterKeys.BoundingBox : bboxString(lat: lat, long: long),
@@ -53,54 +53,22 @@ class FlickrWebManager{
                 completionHandler(nil,"No photos parsed")
                 return
             }
-            
-            print(parsedResults)
-            
-            
             guard let photoDictionary = photos["photo"] as? [[String : AnyObject]] else{
                 completionHandler(nil,"No Photos")
                 return
             }
             
-            var resultPhotos = [[String : AnyObject]]()
-            
+            var resultPhotos = [String]()
             for photo in photoDictionary{
-                var tempPhoto = [String : AnyObject]()
-                if let id = photo["id"] as? Int, let url = photo["url_m"]{
-                    tempPhoto["id"] = id as AnyObject
-                    tempPhoto["url"] = url
+                if let url = photo["url_m"]{
+                    resultPhotos.append(url as! String)
                 }else{
                     completionHandler(nil,"Could not retrieve photo id")
                     return
                 }
-                
-                
-                
             }
+            completionHandler(resultPhotos, nil)
             
-            
-            //            let randomPhotoIndex = Int(arc4random_uniform(UInt32(photoDictionary.count)))
-            //            guard let url = photoDictionary [randomPhotoIndex]["url_m"] as? String else{
-            //                displayError("Missing URL")
-            //                return
-            //            }
-            //            do {
-            //                let data = try Data(contentsOf: URL(string: url)! )
-            //                performUIUpdatesOnMain {
-            //                     self.photoImageView.image = UIImage(data: data)
-            //                    self.photoTitleLabel.text = photoDictionary[randomPhotoIndex]["title"] as! String
-            //                    self.setUIEnabled(true)
-            //                }
-            //
-            //
-            //
-            //            } catch{
-            //                displayError("Data not retrieved from URL")
-            //            }
-            
-            
-            
-            //            self.displayImageFromFlickrBySearchWithPageNumber(methodParameters: methodParameters, pagenumber: randomPageNumber)
         }
         task.resume()
     }

@@ -18,11 +18,20 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     var fetchedResultsController : NSFetchedResultsController<Pin>!
     var dataController : DataController!
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupFetchResultsController()
+        addAnnotations()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        fetchedResultsController = nil
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         var delegate = UIApplication.shared.delegate as! AppDelegate
         dataController = delegate.dataController
-        setupFetchResultsController()
         deleteButton.isHidden = true
         title = "Virtual Tourist"
         mapView.delegate = self
@@ -34,7 +43,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         let longTap = UILongPressGestureRecognizer(target: self, action: #selector(dropPin(_:)))
         longTap.minimumPressDuration = 1.5 // in seconds
         mapView.addGestureRecognizer(longTap)
-        addAnnotations()
+        
         
     }
     
