@@ -9,7 +9,7 @@
 import Foundation
 
 class FlickrWebManager{
-    public func displayImageFromFlickrBySearch(lat : Double , long: Double, completionHandler: @escaping (_ result: [String]?, _ error: String?) -> Void) {
+    public func displayImageFromFlickrBySearch(lat : Double , long: Double, page : Int, completionHandler: @escaping (_ result: [String]?, _ error: String?) -> Void) {
         
         let methodParameters: [String: AnyObject] = [Constants.FlickrParameterKeys.SafeSearch:Constants.FlickrParameterValues.UseSafeSearch,
                                                      Constants.FlickrParameterKeys.BoundingBox : bboxString(lat: lat, long: long),
@@ -18,7 +18,8 @@ class FlickrWebManager{
                                                      Constants.FlickrParameterKeys.Method : Constants.FlickrParameterValues.SearchMethod,
                                                      Constants.FlickrParameterKeys.Format : Constants.FlickrParameterValues.ResponseFormat,
                                                      Constants.FlickrParameterKeys.PerPage : 21,
-                                                     Constants.FlickrParameterKeys.NoJSONCallback : Constants.FlickrParameterValues.DisableJSONCallback] as! [String: AnyObject]
+                                                     Constants.FlickrParameterKeys.NoJSONCallback : Constants.FlickrParameterValues.DisableJSONCallback,
+                                                     Constants.FlickrParameterKeys.Page : page] as! [String: AnyObject]
         
         let session = URLSession.shared
         let request = URLRequest(url: self.flickrURLFromParameters(methodParameters))

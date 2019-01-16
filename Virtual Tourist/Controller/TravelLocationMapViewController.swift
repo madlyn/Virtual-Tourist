@@ -10,13 +10,14 @@ import UIKit
 import MapKit
 import CoreData
 
-class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
+class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
 
     @IBOutlet weak var deleteButton: UIButton!
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var editButton: UIBarButtonItem!
     var fetchedResultsController : NSFetchedResultsController<Pin>!
     var dataController : DataController!
+    var selectedAnnotation : MKAnnotation!
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -50,7 +51,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     fileprivate func setupFetchResultsController() {
         let fetchRequest : NSFetchRequest<Pin> = Pin.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "lat", ascending: true)]
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.backgroundContext, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
         do{
             try fetchedResultsController.performFetch()
@@ -103,7 +104,8 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
    
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        var selectedAnnotation = view.annotation as? MKPointAnnotation
+        selectedAnnotation = view.annotation
+        mapView.removeAnnotation(view.annotation!)
         var selectedPin : Pin!
         try? fetchedResultsController.performFetch()
         for location in fetchedResultsController!.fetchedObjects!{
@@ -114,7 +116,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         if deleteButton.isHidden == false{
             dataController.viewContext.delete(selectedPin)
             try? dataController.viewContext.save()
-            mapView.removeAnnotation(selectedAnnotation!)
+            
             
         } else{
             let destination = storyboard?.instantiateViewController(withIdentifier: "photoAlbum") as! PhotoAlbumViewController
@@ -153,3 +155,36 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     }
     
 }
+
+
+extension TravelLocationMapViewController:NSFetchedResultsControllerDelegate {
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            break
+        case .delete:
+            print("Deleting")
+            DispatchQueue.main.async {
+                self.mapView.removeAnnotation(self.selectedAnnotation)
+            }
+            
+            break
+        case .update: break
+        //            tableView.reloadRows(at: [indexPath!], with: .fade)
+        case .move: break
+            //            tableView.moveRow(at: indexPath!, to: newIndexPath!)
+        }
+    }
+    
+    
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        collection.reloadData()
+    }
+    
+}
+

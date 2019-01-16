@@ -17,8 +17,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     var dataController: DataController!
     var fetchedResultsController : NSFetchedResultsController<Photo>!
-    var backgroundContext : NSManagedObjectContext!
     var pin : Pin!
+    var page = 1
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -40,14 +40,13 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     fileprivate func setupContext() {
         let delegate = UIApplication.shared.delegate as! AppDelegate
         dataController = delegate.dataController
-        backgroundContext = dataController.backgroundContext
     }
     
     fileprivate func getImages() {
         let fetchRequest : NSFetchRequest<Photo> = Photo.fetchRequest()
         let predicate = NSPredicate(format: "pin == %@", pin)
         fetchRequest.predicate = predicate
-        let sortDescriptor = NSSortDescriptor(key: "pin", ascending: true)
+        let sortDescriptor = NSSortDescriptor(key: "pin", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
@@ -55,8 +54,9 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         do {
             try fetchedResultsController.performFetch()
             if fetchedResultsController.fetchedObjects?.count == 0{
+                print("downloading")
                 let manager = FlickrWebManager()
-                manager.displayImageFromFlickrBySearch(lat: pin.lat, long: pin.long) { (result, error) in
+                manager.displayImageFromFlickrBySearch(lat: pin.lat, long: pin.long, page: page) { (result, error) in
                     if let error = error{
                         print(error)
                         return
@@ -65,7 +65,10 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                         self.downloadImage(url: pic)
                     }
                     if result?.count == 0{
-                        self.collection.isHidden = true
+                        DispatchQueue.main.async {
+                            self.collection.isHidden = true
+                        }
+                        
                     }
                 }
             }
@@ -82,13 +85,21 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 print(error)
                 return
             }
-            let pic = Photo(context: self.dataController.backgroundContext)
+            let pic = Photo(context: self.dataController.viewContext)
             pic.data = data
-            pic.pin = self.pin
-            try? self.backgroundContext.save()
+                            pic.pin = self.pin
+            try? self.dataController.viewContext.save()
             
         }
     }
+    
+    @IBAction func newCollectionTapped(_ sender: Any) {
+        for object in fetchedResultsController!.fetchedObjects!{
+            dataController.viewContext.delete(object)
+            try? dataController.viewContext.save()
+        }
+    }
+    
     
     // MARK: - Map Functions
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {

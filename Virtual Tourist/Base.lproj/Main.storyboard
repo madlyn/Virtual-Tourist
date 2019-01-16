@@ -22,10 +22,10 @@
                                 <rect key="frame" x="0.0" y="64" width="375" height="603"/>
                             </mapView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YkY-39-UeQ">
-                                <rect key="frame" x="0.0" y="592" width="375" height="75"/>
+                                <rect key="frame" x="0.0" y="617" width="375" height="50"/>
                                 <color key="backgroundColor" red="0.79743685789999996" green="0.14913141730000001" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="75" id="5ag-UF-WP0"/>
+                                    <constraint firstAttribute="height" constant="50" id="5ag-UF-WP0"/>
                                 </constraints>
                                 <state key="normal" title="Tab Pins to Delete!">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -83,7 +83,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Uno-x2-Ist">
-                                <rect key="frame" x="0.0" y="170" width="375" height="497"/>
+                                <rect key="frame" x="0.0" y="170" width="375" height="447"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="RoC-kU-bXC">
                                     <size key="itemSize" width="100" height="103"/>
@@ -102,15 +102,21 @@
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="479-fF-sLl">
                                                     <rect key="frame" x="0.0" y="0.0" width="100" height="103"/>
                                                 </imageView>
+                                                <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="BB2-iJ-Ljh">
+                                                    <rect key="frame" x="40" y="41.5" width="20" height="20"/>
+                                                </activityIndicatorView>
                                             </subviews>
                                         </view>
                                         <constraints>
                                             <constraint firstItem="479-fF-sLl" firstAttribute="top" secondItem="mfq-Fh-3w2" secondAttribute="top" id="5AZ-co-ySM"/>
                                             <constraint firstAttribute="bottom" secondItem="479-fF-sLl" secondAttribute="bottom" id="Cth-uW-0Pc"/>
+                                            <constraint firstItem="BB2-iJ-Ljh" firstAttribute="centerX" secondItem="mfq-Fh-3w2" secondAttribute="centerX" id="EV7-aV-0bY"/>
+                                            <constraint firstItem="BB2-iJ-Ljh" firstAttribute="centerY" secondItem="mfq-Fh-3w2" secondAttribute="centerY" id="P3E-2i-LiW"/>
                                             <constraint firstAttribute="trailing" secondItem="479-fF-sLl" secondAttribute="trailing" id="i6K-ri-vEN"/>
                                             <constraint firstItem="479-fF-sLl" firstAttribute="leading" secondItem="mfq-Fh-3w2" secondAttribute="leading" id="rct-qN-hOu"/>
                                         </constraints>
                                         <connections>
+                                            <outlet property="activityIndicator" destination="BB2-iJ-Ljh" id="GHJ-f5-tAp"/>
                                             <outlet property="image" destination="479-fF-sLl" id="SYk-GN-IKB"/>
                                         </connections>
                                     </collectionViewCell>
@@ -120,16 +126,29 @@
                                     <outlet property="delegate" destination="asO-OI-F5y" id="rT9-aY-2bp"/>
                                 </connections>
                             </collectionView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DvL-wZ-rBb">
+                                <rect key="frame" x="0.0" y="617" width="375" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="KEH-bs-frI"/>
+                                </constraints>
+                                <state key="normal" title="New Collection"/>
+                                <connections>
+                                    <action selector="newCollectionTapped:" destination="asO-OI-F5y" eventType="touchUpInside" id="ele-rN-37V"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="Uno-x2-Ist" firstAttribute="leading" secondItem="mNs-Zs-oIw" secondAttribute="leading" id="5jx-Zo-7eI"/>
                             <constraint firstItem="LQk-q4-c1a" firstAttribute="trailing" secondItem="mNs-Zs-oIw" secondAttribute="trailing" id="6pH-V9-gyF"/>
-                            <constraint firstItem="mNs-Zs-oIw" firstAttribute="bottom" secondItem="Uno-x2-Ist" secondAttribute="bottom" id="DdY-At-jpg"/>
                             <constraint firstItem="50R-tW-2NC" firstAttribute="centerX" secondItem="eBa-cu-eCX" secondAttribute="centerX" id="Gxr-E9-nGM"/>
+                            <constraint firstItem="mNs-Zs-oIw" firstAttribute="bottom" secondItem="DvL-wZ-rBb" secondAttribute="bottom" id="RoC-8l-7FB"/>
+                            <constraint firstItem="mNs-Zs-oIw" firstAttribute="trailing" secondItem="DvL-wZ-rBb" secondAttribute="trailing" id="SNz-Ba-Zqt"/>
                             <constraint firstItem="50R-tW-2NC" firstAttribute="centerY" secondItem="eBa-cu-eCX" secondAttribute="centerY" id="biA-4P-TIH"/>
+                            <constraint firstItem="DvL-wZ-rBb" firstAttribute="top" secondItem="Uno-x2-Ist" secondAttribute="bottom" id="ery-jJ-Gx7"/>
                             <constraint firstItem="mNs-Zs-oIw" firstAttribute="trailing" secondItem="Uno-x2-Ist" secondAttribute="trailing" id="f6V-AK-nJ5"/>
                             <constraint firstItem="LQk-q4-c1a" firstAttribute="top" secondItem="mNs-Zs-oIw" secondAttribute="top" id="gsh-vP-3XC"/>
+                            <constraint firstItem="DvL-wZ-rBb" firstAttribute="leading" secondItem="mNs-Zs-oIw" secondAttribute="leading" id="hHT-Qv-r1u"/>
                             <constraint firstItem="LQk-q4-c1a" firstAttribute="leading" secondItem="mNs-Zs-oIw" secondAttribute="leading" id="qmO-tv-KtP"/>
                             <constraint firstItem="Uno-x2-Ist" firstAttribute="top" secondItem="LQk-q4-c1a" secondAttribute="bottom" id="uoK-CN-ffn"/>
                         </constraints>
