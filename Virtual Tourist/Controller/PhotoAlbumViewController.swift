@@ -121,7 +121,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! ImageCollectionViewCell
-        //        cell.image.image = UIImage(data: photo.data!)
+                cell.image.image = UIImage(data: pictures[indexPath.row])
         return cell;
         
         
@@ -142,6 +142,7 @@ extension PhotoAlbumViewController{
     func handleNewImageObserver(notification : Notification){
         DispatchQueue.main.async {
             self.collection.reloadData()
+            print("updating")
         }
     }
     
