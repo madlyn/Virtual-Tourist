@@ -11,16 +11,21 @@ import CoreData
 import UIKit
 
 class ImageDownloader{
-    func downloadImage(url : String, completionHandler: @escaping ( _ data: Data?, _ error: String?) -> Void){
+    func downloadImage( imagePath:String, completionHandler: @escaping (_ imageData: Data?, _ errorString: String?) -> Void){
+        let session = URLSession.shared
+        let imgURL = NSURL(string: imagePath)
+        let request: NSURLRequest = NSURLRequest(url: imgURL! as URL)
         
-            do {
-                let data = try Data(contentsOf: URL(string: url)! )
+        let task = session.dataTask(with: request as URLRequest) {data, response, downloadError in
+            
+            if downloadError != nil {
+                completionHandler(nil, "Could not download image \(imagePath)")
+            } else {
+                
                 completionHandler(data, nil)
-                
-                
-            } catch{
-                completionHandler(nil, "could not download image")
             }
+        }
         
+        task.resume()
     }
 }

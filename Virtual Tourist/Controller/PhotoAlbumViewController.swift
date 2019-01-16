@@ -83,8 +83,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     }
     
     fileprivate func downloadImage(url : String){
-        var downloader = ImageDownloader()
-        downloader.downloadImage(url: url) { (data, error) in
+        let downloader = ImageDownloader()
+        downloader.downloadImage(imagePath: url) { (data, error) in
             guard error == nil else{
                 print(error)
                 return
