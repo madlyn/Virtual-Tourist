@@ -19,6 +19,9 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     var fetchedResultsController : NSFetchedResultsController<Photo>!
     var pin : Pin!
     var page = 1
+    var insertedIndexPaths: [IndexPath]!
+    var updatedIndexPaths: [IndexPath]!
+    var deletedIndexPaths: [IndexPath]!
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -46,7 +49,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         let manager = FlickrWebManager()
         manager.displayImageFromFlickrBySearch(lat: pin.lat, long: pin.long, page: page) { (result, error) in
             if let error = error{
-                print(error)
+                debugPrint(error)
                 return
             }
             for pic in result!{
@@ -168,25 +171,50 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
 
 extension PhotoAlbumViewController:NSFetchedResultsControllerDelegate {
     
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        //clear arrays
+        insertedIndexPaths = [IndexPath]()
+        updatedIndexPaths = [IndexPath]()
+        deletedIndexPaths = [IndexPath]()
+    }
+    
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
-        case .insert: break
-        case .delete:
-            collection.deleteItems(at: [selectedIndex])
+        case .insert:
+            print("insert object")
+            insertedIndexPaths.append(newIndexPath!)
             break
-        case .update: break
-        case .move: break
+        case .update:
+            print("update object")
+            updatedIndexPaths.append(indexPath!)
+            break
+        case .delete:
+            print("delete object")
+            deletedIndexPaths.append(indexPath!)
+            break
+        default:
+            print("DEFAULT - no other action needed")
+            break
         }
     }
     
-    
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        
-    }
-    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        collection.reloadData()
         
+        collection.performBatchUpdates({() -> Void in
+            for indexPath in self.insertedIndexPaths {
+                self.collection.insertItems(at: [indexPath])
+            }
+            
+            for indexPath in self.updatedIndexPaths {
+                print("indexPathinfo: \(indexPath)")
+                self.collection.reloadItems(at: [indexPath])
+            }
+            
+            for indexPath in self.deletedIndexPaths {
+                print("indexPathinfo: \(indexPath)")
+                self.collection.deleteItems(at: [indexPath])
+            }
+        }, completion: nil)
     }
     
 }
