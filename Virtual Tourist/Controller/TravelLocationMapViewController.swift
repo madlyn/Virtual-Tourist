@@ -42,7 +42,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
         }
         // add gesture recognizer
         let longTap = UILongPressGestureRecognizer(target: self, action: #selector(dropPin(_:)))
-        longTap.minimumPressDuration = 1.5 // in seconds
+        longTap.minimumPressDuration = 0.5 // in seconds
         mapView.addGestureRecognizer(longTap)
         
         
@@ -73,6 +73,9 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
     }
     
     @objc func dropPin(_ recognizer: UIGestureRecognizer){
+        if(recognizer.state != .began){
+            return
+        }
         let touchedAt = recognizer.location(in: self.mapView) // adds the location on the view it was pressed
         let touchedAtCoordinate : CLLocationCoordinate2D = mapView.convert(touchedAt, toCoordinateFrom: self.mapView) // will get coordinates
         
