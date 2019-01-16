@@ -74,7 +74,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         do {
             try fetchedResultsController.performFetch()
             if fetchedResultsController.fetchedObjects?.count == 0{
-                print("downloading")
                 downloadFromFlickr()
             }
         } catch {
@@ -171,17 +170,12 @@ extension PhotoAlbumViewController:NSFetchedResultsControllerDelegate {
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
-        case .insert:
-            
-            
-            break
+        case .insert: break
         case .delete:
             collection.deleteItems(at: [selectedIndex])
             break
         case .update: break
-        break
         case .move: break
-            //            tableView.moveRow(at: indexPath!, to: newIndexPath!)
         }
     }
     
