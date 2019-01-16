@@ -42,6 +42,26 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         dataController = delegate.dataController
     }
     
+    fileprivate func downloadFromFlickr() {
+        let manager = FlickrWebManager()
+        manager.displayImageFromFlickrBySearch(lat: pin.lat, long: pin.long, page: page) { (result, error) in
+            if let error = error{
+                print(error)
+                return
+            }
+            
+            for pic in result!{
+                self.downloadImage(url: pic)
+            }
+            if result?.count == 0{
+                DispatchQueue.main.async {
+                    self.collection.isHidden = true
+                }
+                
+            }
+        }
+    }
+    
     fileprivate func getImages() {
         let fetchRequest : NSFetchRequest<Photo> = Photo.fetchRequest()
         let predicate = NSPredicate(format: "pin == %@", pin)
@@ -55,22 +75,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             try fetchedResultsController.performFetch()
             if fetchedResultsController.fetchedObjects?.count == 0{
                 print("downloading")
-                let manager = FlickrWebManager()
-                manager.displayImageFromFlickrBySearch(lat: pin.lat, long: pin.long, page: page) { (result, error) in
-                    if let error = error{
-                        print(error)
-                        return
-                    }
-                    for pic in result!{
-                        self.downloadImage(url: pic)
-                    }
-                    if result?.count == 0{
-                        DispatchQueue.main.async {
-                            self.collection.isHidden = true
-                        }
-                        
-                    }
-                }
+                downloadFromFlickr()
             }
         } catch {
             fatalError("The fetch could not be performed: \(error.localizedDescription)")
@@ -87,7 +92,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             }
             let pic = Photo(context: self.dataController.viewContext)
             pic.data = data
-                            pic.pin = self.pin
+            pic.pin = self.pin
             try? self.dataController.viewContext.save()
             
         }
@@ -98,6 +103,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             dataController.viewContext.delete(object)
             try? dataController.viewContext.save()
         }
+        page += 1
+        downloadFromFlickr()
     }
     
     
@@ -158,7 +165,7 @@ extension PhotoAlbumViewController:NSFetchedResultsControllerDelegate {
         switch type {
         case .insert:
             break
-//            collection.insertItems(at: [indexPath!])
+            //            collection.insertItems(at: [indexPath!])
             //            tableView.insertRows(at: [newIndexPath!], with: .fade)
             break
         case .delete:
