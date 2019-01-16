@@ -53,7 +53,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 return
             }
             for pic in result!{
-                self.downloadImage(url: pic)
+                self.saveImage(url : pic)
             }
             
             if result?.count == 0{
@@ -69,7 +69,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         let fetchRequest : NSFetchRequest<Photo> = Photo.fetchRequest()
         let predicate = NSPredicate(format: "pin == %@", pin)
         fetchRequest.predicate = predicate
-        let sortDescriptor = NSSortDescriptor(key: "pin", ascending: false)
+        let sortDescriptor = NSSortDescriptor(key: "dateAdded", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
@@ -85,16 +85,22 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         
     }
     
-    fileprivate func downloadImage(url : String){
+    fileprivate func saveImage(url : String){
+        let pic = Photo(context: self.dataController.viewContext)
+        pic.url = url
+        pic.pin = self.pin
+        pic.dateAdded = Date()
+        try? self.dataController.viewContext.save()
+    }
+    
+    fileprivate func downloadImage(picture : Photo , completionHandler: @escaping ( _ data: Data?) -> Void){
         let downloader = ImageDownloader()
-        downloader.downloadImage(imagePath: url) { (data, error) in
+        downloader.downloadImage(imagePath: picture.url!) { (data, error) in
             guard error == nil else{
                 print(error)
                 return
             }
-            let pic = Photo(context: self.dataController.viewContext)
-            pic.data = data
-            pic.pin = self.pin
+            picture.data = data
             try? self.dataController.viewContext.save()
             
         }
@@ -103,8 +109,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     @IBAction func newCollectionTapped(_ sender: Any) {
         for object in fetchedResultsController!.fetchedObjects!{
             dataController.viewContext.delete(object)
-            try? dataController.viewContext.save()
         }
+        try? dataController.viewContext.save()
         page += 1
         downloadFromFlickr()
     }
@@ -152,8 +158,17 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let picture = fetchedResultsController.object(at: indexPath)
-        let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! ImageCollectionViewCell
-        cell.image.image = UIImage(data: picture.data!)
+         let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! ImageCollectionViewCell
+        cell.image.image = #imageLiteral(resourceName: "Placeholder")
+        if picture.data == nil{
+            downloadImage(picture: picture) { (data) in
+                cell.image.image = UIImage(data: data!)
+            }
+        } else{
+            cell.image.image = UIImage(data: picture.data!)
+        }
+       
+
         return cell;
 
     }
