@@ -76,6 +76,12 @@
                                     <constraint firstAttribute="height" constant="150" id="cPJ-xM-qRZ"/>
                                 </constraints>
                             </mapView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Images were found" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="50R-tW-2NC">
+                                <rect key="frame" x="101.5" y="323" width="172" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Uno-x2-Ist">
                                 <rect key="frame" x="0.0" y="170" width="375" height="497"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -120,6 +126,8 @@
                             <constraint firstItem="Uno-x2-Ist" firstAttribute="leading" secondItem="mNs-Zs-oIw" secondAttribute="leading" id="5jx-Zo-7eI"/>
                             <constraint firstItem="LQk-q4-c1a" firstAttribute="trailing" secondItem="mNs-Zs-oIw" secondAttribute="trailing" id="6pH-V9-gyF"/>
                             <constraint firstItem="mNs-Zs-oIw" firstAttribute="bottom" secondItem="Uno-x2-Ist" secondAttribute="bottom" id="DdY-At-jpg"/>
+                            <constraint firstItem="50R-tW-2NC" firstAttribute="centerX" secondItem="eBa-cu-eCX" secondAttribute="centerX" id="Gxr-E9-nGM"/>
+                            <constraint firstItem="50R-tW-2NC" firstAttribute="centerY" secondItem="eBa-cu-eCX" secondAttribute="centerY" id="biA-4P-TIH"/>
                             <constraint firstItem="mNs-Zs-oIw" firstAttribute="trailing" secondItem="Uno-x2-Ist" secondAttribute="trailing" id="f6V-AK-nJ5"/>
                             <constraint firstItem="LQk-q4-c1a" firstAttribute="top" secondItem="mNs-Zs-oIw" secondAttribute="top" id="gsh-vP-3XC"/>
                             <constraint firstItem="LQk-q4-c1a" firstAttribute="leading" secondItem="mNs-Zs-oIw" secondAttribute="leading" id="qmO-tv-KtP"/>

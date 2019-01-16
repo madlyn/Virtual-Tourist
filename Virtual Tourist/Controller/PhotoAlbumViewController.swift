@@ -18,10 +18,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     var dataController: DataController!
     var fetchedResultsController : NSFetchedResultsController<Photo>!
     var backgroundContext : NSManagedObjectContext!
-//    var pictures = [Data]()
     var pin : Pin!
-//    var observerToken : Any?
-//    var savedResults = true
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -37,13 +34,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         super.viewDidLoad()
         mapView.delegate = self
         setMap()
-//        addNewImageObserver()
-        
     }
     
-//    deinit {
-//        removeNewImageObserver()
-//    }
     
     fileprivate func setupContext() {
         let delegate = UIApplication.shared.delegate as! AppDelegate
@@ -63,8 +55,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         do {
             try fetchedResultsController.performFetch()
             if fetchedResultsController.fetchedObjects?.count == 0{
-                print("No Images")
-//                savedResults = false
                 let manager = FlickrWebManager()
                 manager.displayImageFromFlickrBySearch(lat: pin.lat, long: pin.long) { (result, error) in
                     if let error = error{
@@ -73,6 +63,9 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                     }
                     for pic in result!{
                         self.downloadImage(url: pic)
+                    }
+                    if result?.count == 0{
+                        self.collection.isHidden = true
                     }
                 }
             }
@@ -89,7 +82,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 print(error)
                 return
             }
-//            self.pictures.append(data!)
             let pic = Photo(context: self.dataController.backgroundContext)
             pic.data = data
             pic.pin = self.pin
@@ -149,25 +141,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
 }
 
-//extension PhotoAlbumViewController{
-//    func addNewImageObserver(){
-//        removeNewImageObserver()
-//        observerToken = NotificationCenter.default.addObserver(forName: .NSManagedObjectContextObjectsDidChange, object: dataController?.viewContext, queue: nil, using: handleNewImageObserver(notification:))
-//    }
-//    func removeNewImageObserver(){
-//        if let token = observerToken{
-//            NotificationCenter.default.removeObserver(token)
-//        }
-//    }
-//    func handleNewImageObserver(notification : Notification){
-//        DispatchQueue.main.async {
-//            self.collection.reloadData()
-//            print("updating")
-//        }
-//    }
-//
-//}
-
 extension PhotoAlbumViewController:NSFetchedResultsControllerDelegate {
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
@@ -188,24 +161,13 @@ extension PhotoAlbumViewController:NSFetchedResultsControllerDelegate {
         }
     }
     
-    //    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
-    //        let indexSet = IndexSet(integer: sectionIndex)
-    //        switch type {
-    //        case .insert: tableView.insertSections(indexSet, with: .fade)
-    //        case .delete: tableView.deleteSections(indexSet, with: .fade)
-    //        case .update, .move:
-    //            fatalError("Invalid change type in controller(_:didChange:atSectionIndex:for:). Only .insert or .delete should be possible.")
-    //        }
-    //    }
-    
     
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        collection.reloadData()
-        //        collection.beginUpdates()
+        
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        //        collection.endUpdates()
+        collection.reloadData()
     }
     
 }
