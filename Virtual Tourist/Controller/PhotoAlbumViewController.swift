@@ -18,12 +18,13 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     var dataController: DataController!
     var fetchedResultsController : NSFetchedResultsController<Photo>!
     var backgroundContext : NSManagedObjectContext!
-    
+    var pictures = [Data]()
     var pin : Pin!
+    var observerToken : Any?
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        setupFetchResultsController()
+        setupContext()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -35,22 +36,18 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         mapView.delegate = self
         setMap()
         getImages()
+        addNewImageObserver()
         
     }
     
-    fileprivate func setupFetchResultsController() {
+    deinit {
+        removeNewImageObserver()
+    }
+    
+    fileprivate func setupContext() {
         let delegate = UIApplication.shared.delegate as! AppDelegate
         dataController = delegate.dataController
         backgroundContext = dataController.backgroundContext
-        let fetchRequest : NSFetchRequest<Photo> = Photo.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "data", ascending: false)]
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.backgroundContext, sectionNameKeyPath: nil, cacheName: nil)
-        //        fetchedResultsController.delegate = self
-        do{
-            try fetchedResultsController.performFetch()
-        } catch{
-            fatalError()
-        }
     }
     
     fileprivate func getImages() {
@@ -73,12 +70,10 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 print(error)
                 return
             }
-            print("HEllo")
+            self.pictures.append(data!)
             let pic = Photo(context: self.dataController.backgroundContext)
             pic.data = data
             try? self.backgroundContext.save()
-            
-            
             
         }
     }
@@ -120,12 +115,11 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     // MARK: Collection View
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return fetchedResultsController.sections?[section].numberOfObjects ?? 0
+        return pictures.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        let photo = fetchedResultsController.object(at: indexPath)
         let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! ImageCollectionViewCell
         //        cell.image.image = UIImage(data: photo.data!)
         return cell;
@@ -135,24 +129,22 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
 }
 
-extension PhotoAlbumViewController : NSFetchedResultsControllerDelegate{
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        print("HEelo1")
-        
+extension PhotoAlbumViewController{
+    func addNewImageObserver(){
+        removeNewImageObserver()
+        observerToken = NotificationCenter.default.addObserver(forName: .NSManagedObjectContextObjectsDidChange, object: dataController?.viewContext, queue: nil, using: handleNewImageObserver(notification:))
     }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        //        tableView.endUpdates()
-    }
-    public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        switch type {
-        case .insert:
-            print("Hello")
-        //            tableView.insertRows(at: [newIndexPath!], with: .fade)
-        case .delete: break
-        //            tableView.deleteRows(at: [indexPath!], with: .fade)
-        default:
-            break
+    func removeNewImageObserver(){
+        if let token = observerToken{
+            NotificationCenter.default.removeObserver(token)
         }
     }
+    func handleNewImageObserver(notification : Notification){
+        DispatchQueue.main.async {
+            self.collection.reloadData()
+        }
+    }
+    
 }
+
+

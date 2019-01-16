@@ -105,6 +105,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         var selectedAnnotation = view.annotation as? MKPointAnnotation
         var selectedPin : Pin!
+        try? fetchedResultsController.performFetch()
         for location in fetchedResultsController!.fetchedObjects!{
             if location.lat == selectedAnnotation?.coordinate.latitude && location.long == selectedAnnotation?.coordinate.longitude{
                 selectedPin = location
