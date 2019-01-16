@@ -159,12 +159,15 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let picture = fetchedResultsController.object(at: indexPath)
          let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! ImageCollectionViewCell
+        cell.activityIndicator.startAnimating()
         cell.image.image = #imageLiteral(resourceName: "Placeholder")
         if picture.data == nil{
             downloadImage(picture: picture) { (data) in
+                cell.activityIndicator.stopAnimating()
                 cell.image.image = UIImage(data: data!)
             }
         } else{
+            cell.activityIndicator.stopAnimating()
             cell.image.image = UIImage(data: picture.data!)
         }
        
