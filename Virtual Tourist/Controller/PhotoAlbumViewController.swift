@@ -49,10 +49,10 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 print(error)
                 return
             }
-            
             for pic in result!{
                 self.downloadImage(url: pic)
             }
+            
             if result?.count == 0{
                 DispatchQueue.main.async {
                     self.collection.isHidden = true
@@ -153,8 +153,16 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         let cell = collection.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! ImageCollectionViewCell
         cell.image.image = UIImage(data: picture.data!)
         return cell;
-        
-        
+
+    }
+    
+    var selectedIndex : IndexPath!
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        selectedIndex = indexPath
+        let photo = fetchedResultsController.object(at: indexPath)
+        dataController.viewContext.delete(photo)
+        try! dataController.viewContext.save()
     }
     
 }
@@ -164,16 +172,14 @@ extension PhotoAlbumViewController:NSFetchedResultsControllerDelegate {
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
         case .insert:
-            break
-            //            collection.insertItems(at: [indexPath!])
-            //            tableView.insertRows(at: [newIndexPath!], with: .fade)
+            
+            
             break
         case .delete:
-            break
-            //            tableView.deleteRows(at: [indexPath!], with: .fade)
+            collection.deleteItems(at: [selectedIndex])
             break
         case .update: break
-        //            tableView.reloadRows(at: [indexPath!], with: .fade)
+        break
         case .move: break
             //            tableView.moveRow(at: indexPath!, to: newIndexPath!)
         }
@@ -186,6 +192,7 @@ extension PhotoAlbumViewController:NSFetchedResultsControllerDelegate {
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         collection.reloadData()
+        
     }
     
 }
